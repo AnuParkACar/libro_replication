@@ -1,0 +1,32 @@
+[
+  {
+    "project": "Lang",
+    "bug_id": "1",
+    "title": "Bug Report",
+    "description": "See bug report: ",
+    "report_url": "",
+    "test": "public void TestLang747() {\n    assertEquals(Integer.valueOf(0x8000),      NumberUtils.createNumber(\"0x8000\"));\n    assertEquals(Integer.valueOf(0x80000),     NumberUtils.createNumber(\"0x80000\"));\n    assertEquals(Integer.valueOf(0x800000),    NumberUtils.createNumber(\"0x800000\"));\n    assertEquals(Integer.valueOf(0x8000000),   NumberUtils.createNumber(\"0x8000000\"));\n    assertEquals(Integer.valueOf(0x7FFFFFFF),  NumberUtils.createNumber(\"0x7FFFFFFF\"));\n    assertEquals(Long.valueOf(0x80000000L),    NumberUtils.createNumber(\"0x80000000\"));\n    assertEquals(Long.valueOf(0xFFFFFFFFL),    NumberUtils.createNumber(\"0xFFFFFFFF\"));\n\n    // Leading zero tests\n    assertEquals(Integer.valueOf(0x8000000),   NumberUtils.createNumber(\"0x08000000\"));\n    assertEquals(Integer.valueOf(0x7FFFFFFF),  NumberUtils.createNumber(\"0x007FFFFFFF\"));\n    assertEquals(Long.valueOf(0x80000000L),    NumberUtils.createNumber(\"0x080000000\"));\n    assertEquals(Long.valueOf(0xFFFFFFFFL),    NumberUtils.createNumber(\"0x00FFFFFFFF\"));\n\n    assertEquals(Long.valueOf(0x800000000L),        NumberUtils.createNumber(\"0x800000000\"));\n    assertEquals(Long.valueOf(0x8000000000L),       NumberUtils.createNumber(\"0x8000000000\"));\n    assertEquals(Long.valueOf(0x80000000000L),      NumberUtils.createNumber(\"0x80000000000\"));\n    assertEquals(Long.valueOf(0x800000000000L),     NumberUtils.createNumber(\"0x800000000000\"));\n    assertEquals(Long.valueOf(0x8000000000000L),    NumberUtils.createNumber(\"0x8000000000000\"));\n    assertEquals(Long.valueOf(0x80000000000000L),   NumberUtils.createNumber(\"0x80000000000000\"));\n    assertEquals(Long.valueOf(0x800000000000000L),  NumberUtils.createNumber(\"0x800000000000000\"));\n    assertEquals(Long.valueOf(0x7FFFFFFFFFFFFFFFL), NumberUtils.createNumber(\"0x7FFFFFFFFFFFFFFF\"));\n    // N.B. Cannot use a hex constant such as 0x8000000000000000L here as that is interpreted as a negative long\n    assertEquals(new BigInteger(\"8000000000000000\", 16), NumberUtils.createNumber(\"0x8000000000000000\"));\n    assertEquals(new BigInteger(\"FFFFFFFFFFFFFFFF\", 16), NumberUtils.createNumber(\"0xFFFFFFFFFFFFFFFF\"));\n\n    // Leading zero tests\n    assertEquals(Long.valueOf(0x80000000000000L),   NumberUtils.createNumber(\"0x00080000000000000\"));\n    assertEquals(Long.valueOf(0x800000000000000L),  NumberUtils.createNumber(\"0x0800000000000000\"));\n    assertEquals(Long.valueOf(0x7FFFFFFFFFFFFFFFL), NumberUtils.createNumber(\"0x07FFFFFFFFFFFFFFF\"));\n    // N.B. Cannot use a hex constant such as 0x8000000000000000L here as that is interpreted as a negative long\n    assertEquals(new BigInteger(\"8000000000000000\", 16), NumberUtils.createNumber(\"0x00008000000000000000\"));\n    assertEquals(new BigInteger(\"FFFFFFFFFFFFFFFF\", 16), NumberUtils.createNumber(\"0x0FFFFFFFFFFFFFFFF\"));\n}",
+    "test_class": "org.apache.commons.lang3.math.NumberUtilsTest",
+    "test_method": "TestLang747"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "1",
+    "title": "Bug Report",
+    "description": "See bug report: ",
+    "report_url": "",
+    "test": "public void createsStructureFromBodySnippet() {\n    // the bar baz stuff naturally goes into the body, but the 'foo' goes into root, and the normalisation routine\n    // needs to move into the start of the body\n    String html = \"foo <b>bar</b> baz\";\n    Document doc = Jsoup.parse(html);\n    assertEquals (\"foo bar baz\", doc.text());\n\n}",
+    "test_class": "org.jsoup.parser.ParserTest",
+    "test_method": "createsStructureFromBodySnippet"
+  },
+  {
+    "project": "Math",
+    "bug_id": "2",
+    "title": "Bug Report",
+    "description": "See bug report: ",
+    "report_url": "",
+    "test": "public void testMath1021() {\n    final int N = 43130568;\n    final int m = 42976365;\n    final int n = 50;\n    final HypergeometricDistribution dist = new HypergeometricDistribution(N, m, n);\n\n    for (int i = 0; i < 100; i++) {\n        final int sample = dist.sample();\n        Assert.assertTrue(\"sample=\" + sample, 0 <= sample);\n        Assert.assertTrue(\"sample=\" + sample, sample <= n);\n    }\n}",
+    "test_class": "org.apache.commons.math3.distribution.HypergeometricDistributionTest",
+    "test_method": "testMath1021"
+  }
+]

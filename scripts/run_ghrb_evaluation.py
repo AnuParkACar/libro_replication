@@ -65,7 +65,7 @@ def main():
     
     # Load model
     print("\nLoading model (this may take 5-10 minutes)...")
-    model_name = "starcoder2-15b"  # or "deepseek-coder-7b" for faster testing
+    model_name = "starcoder2-3b"  # or "deepseek-coder-7b" for faster testing
     
     try:
         pipeline.load_model(model_name)

@@ -1,190 +1,240 @@
-"""
-Evaluation metrics for LIBRO replication.
-Implements acc@k, wef@k, and other metrics from the paper.
-"""
+"""Evaluation metrics for LIBRO replication."""
 
-from typing import List, Dict, Tuple
 import numpy as np
-from collections import defaultdict
+from typing import List, Dict, Tuple
+import logging
+
+logger = logging.getLogger(__name__)
 
 class EvaluationMetrics:
-    """Calculate evaluation metrics for bug reproduction."""
+    """Calculate evaluation metrics for test generation."""
     
-    def __init__(self):
-        """Initialize metrics calculator."""
-        pass
-    
-    def calculate_brt_rate(self, results: Dict[str, Dict]) -> float:
+    @staticmethod
+    def accuracy_at_k(rankings: List[Dict], k: int = 1) -> float:
         """
-        Calculate Bug Reproduction Test (BRT) rate.
-        
-        BRT rate = (# bugs with ≥1 BRT) / (total bugs)
+        Calculate accuracy@k: proportion of bugs with BRT in top-k.
         
         Args:
-            results: Dict mapping bug_id to result dict
-            
-        Returns:
-            BRT rate as float between 0 and 1
-        """
-        total_bugs = len(results)
-        bugs_with_brt = sum(1 for r in results.values() 
-                           if r.get('metrics', {}).get('num_brt', 0) > 0)
-        
-        return bugs_with_brt / total_bugs if total_bugs > 0 else 0
-    
-    def calculate_acc_at_k(self, results: Dict[str, Dict], k: int) -> Tuple[int, float]:
-        """
-        Calculate acc@k: number of bugs with BRT in top-k ranked tests.
-        
-        Args:
-            results: Dict mapping bug_id to result dict with 'ranking'
+            rankings: List of ranking results per bug
             k: Top-k threshold
             
         Returns:
-            Tuple of (count, precision)
-            count: Number of bugs with BRT in top-k
-            precision: count / number of bugs with ranking
+            Accuracy@k as proportion (0.0 to 1.0)
         """
-        count = 0
-        bugs_with_ranking = 0
+        if not rankings:
+            return 0.0
         
-        for bug_id, result in results.items():
-            ranking = result.get('ranking', [])
-            
-            if not ranking:
-                continue
-            
-            bugs_with_ranking += 1
-            
+        bugs_with_brt_in_topk = 0
+        total_bugs = len(rankings)
+        
+        for ranking in rankings:
             # Check if any test in top-k is a BRT
-            top_k = ranking[:k]
-            for test in top_k:
-                if test.get('classification') == 'BRT':
-                    count += 1
-                    break
+            top_k_tests = ranking.get('ranked_tests', [])[:k]
+            
+            for test in top_k_tests:
+                if test.get('is_brt', False):
+                    bugs_with_brt_in_topk += 1
+                    break  # Count bug once
         
-        precision = count / bugs_with_ranking if bugs_with_ranking > 0 else 0
-        
-        return count, precision
+        return bugs_with_brt_in_topk / total_bugs if total_bugs > 0 else 0.0
     
-    def calculate_wef_at_k(self, results: Dict[str, Dict], k: int) -> Dict[str, float]:
+    @staticmethod
+    def wasted_effort(rankings: List[Dict]) -> float:
         """
-        Calculate wef@k: wasted effort at k.
+        Calculate wasted effort: average rank of first BRT.
         
-        wef = number of non-BRT tests inspected before first BRT
+        Lower is better. Minimum is 1.0 (BRT at rank 1).
+        Only calculated for bugs that have BRTs.
         
         Args:
-            results: Dict mapping bug_id to result dict with 'ranking'
-            k: Consider top-k tests
+            rankings: List of ranking results per bug
             
         Returns:
-            Dict with 'total', 'average', 'median' wasted effort
+            Average rank of first BRT
         """
-        wef_values = []
+        first_brt_ranks = []
         
-        for bug_id, result in results.items():
-            ranking = result.get('ranking', [])
+        for ranking in rankings:
+            ranked_tests = ranking.get('ranked_tests', [])
             
-            if not ranking:
-                continue
-            
-            # Calculate wasted effort for this bug
-            wef = 0
-            found_brt = False
-            
-            for i, test in enumerate(ranking[:k]):
-                if test.get('classification') == 'BRT':
-                    found_brt = True
+            # Find rank of first BRT (1-indexed)
+            for rank, test in enumerate(ranked_tests, start=1):
+                if test.get('is_brt', False):
+                    first_brt_ranks.append(rank)
                     break
-                else:
-                    wef += 1
-            
-            # If no BRT found in top-k, wef is k
-            if not found_brt:
-                wef = k
-            
-            wef_values.append(wef)
         
-        if not wef_values:
-            return {'total': 0, 'average': 0, 'median': 0}
+        if not first_brt_ranks:
+            return float('inf')  # No BRTs found
         
-        return {
-            'total': sum(wef_values),
-            'average': np.mean(wef_values),
-            'median': np.median(wef_values)
-        }
+        return np.mean(first_brt_ranks)
     
-    def calculate_all_metrics(self, results: Dict[str, Dict], 
-                             k_values: List[int] = [1, 3, 5]) -> Dict:
+    @staticmethod
+    def wasted_effort_median(rankings: List[Dict]) -> float:
+        """Calculate median wasted effort."""
+        first_brt_ranks = []
+        
+        for ranking in rankings:
+            ranked_tests = ranking.get('ranked_tests', [])
+            
+            for rank, test in enumerate(ranked_tests, start=1):
+                if test.get('is_brt', False):
+                    first_brt_ranks.append(rank)
+                    break
+        
+        if not first_brt_ranks:
+            return float('inf')
+        
+        return np.median(first_brt_ranks)
+    
+    @staticmethod
+    def reproduction_rate(results: Dict[str, Dict]) -> float:
         """
-        Calculate all metrics for the results.
+        Calculate bug reproduction rate.
         
         Args:
-            results: Complete results dict
-            k_values: List of k values to calculate metrics for
+            results: Dict mapping bug_id to results
+            
+        Returns:
+            Proportion of bugs with at least one BRT
+        """
+        if not results:
+            return 0.0
+        
+        bugs_with_brt = sum(
+            1 for r in results.values()
+            if r.get('metrics', {}).get('has_brt', False)
+        )
+        
+        return bugs_with_brt / len(results)
+    
+    @staticmethod
+    def calculate_all_metrics(results: Dict[str, Dict], 
+                             k_values: List[int] = [1, 3, 5, 10]) -> Dict:
+        """
+        Calculate all evaluation metrics.
+        
+        Args:
+            results: Dict mapping bug_id to results with rankings
+            k_values: List of k values for acc@k
             
         Returns:
             Dict with all metrics
         """
+        # Extract rankings (only for bugs with BRTs)
+        rankings = []
+        for bug_id, result in results.items():
+            if result.get('metrics', {}).get('has_brt', False):
+                rankings.append({
+                    'bug_id': bug_id,
+                    'ranked_tests': result.get('ranking', [])
+                })
+        
         metrics = {
-            'brt_rate': self.calculate_brt_rate(results),
+            'reproduction_rate': EvaluationMetrics.reproduction_rate(results),
+            'bugs_reproduced': len(rankings),
             'total_bugs': len(results),
-            'bugs_reproduced': sum(1 for r in results.values() 
-                                  if r.get('metrics', {}).get('num_brt', 0) > 0),
-            'total_brt': sum(r.get('metrics', {}).get('num_brt', 0) 
-                           for r in results.values()),
-            'acc_at_k': {},
-            'wef_at_k': {}
         }
         
-        # Calculate acc@k and wef@k for each k
+        # Calculate acc@k for different k values
         for k in k_values:
-            count, precision = self.calculate_acc_at_k(results, k)
-            metrics['acc_at_k'][f'acc@{k}'] = {
-                'count': count,
-                'precision': precision
-            }
-            
-            wef = self.calculate_wef_at_k(results, k)
-            metrics['wef_at_k'][f'wef@{k}'] = wef
+            metrics[f'acc@{k}'] = EvaluationMetrics.accuracy_at_k(rankings, k)
+        
+        # Calculate wasted effort
+        if rankings:
+            metrics['wasted_effort_mean'] = EvaluationMetrics.wasted_effort(rankings)
+            metrics['wasted_effort_median'] = EvaluationMetrics.wasted_effort_median(rankings)
+        else:
+            metrics['wasted_effort_mean'] = float('inf')
+            metrics['wasted_effort_median'] = float('inf')
         
         return metrics
     
-    def compare_to_baseline(self, libro_results: Dict[str, Dict],
-                           baseline_results: Dict[str, Dict],
-                           k_values: List[int] = [1, 3, 5]) -> Dict:
+    @staticmethod
+    def calculate_per_project_metrics(results: Dict[str, Dict]) -> Dict[str, Dict]:
+        """Calculate metrics per project."""
+        per_project = {}
+        
+        # Group by project
+        for bug_id, result in results.items():
+            project = result.get('project', bug_id.split('-')[0])
+            
+            if project not in per_project:
+                per_project[project] = {}
+            
+            per_project[project][bug_id] = result
+        
+        # Calculate metrics for each project
+        project_metrics = {}
+        for project, project_results in per_project.items():
+            project_metrics[project] = EvaluationMetrics.calculate_all_metrics(
+                project_results
+            )
+        
+        return project_metrics
+
+
+class RandomBaseline:
+    """Random baseline for comparison."""
+    
+    @staticmethod
+    def random_ranking(tests: List[Dict], seed: int = 42) -> List[Dict]:
+        """Randomly shuffle tests."""
+        np.random.seed(seed)
+        shuffled = tests.copy()
+        np.random.shuffle(shuffled)
+        return shuffled
+    
+    @staticmethod
+    def evaluate_random_baseline(results: Dict[str, Dict], 
+                                 num_trials: int = 100) -> Dict:
         """
-        Compare LIBRO results to baseline (e.g., random).
+        Evaluate random baseline with multiple trials.
         
         Args:
-            libro_results: Results from LIBRO
-            baseline_results: Results from baseline
-            k_values: K values to compare
+            results: Results dict with rankings
+            num_trials: Number of random trials
             
         Returns:
-            Comparison dict
+            Dict with average metrics across trials
         """
-        libro_metrics = self.calculate_all_metrics(libro_results, k_values)
-        baseline_metrics = self.calculate_all_metrics(baseline_results, k_values)
+        logger.info(f"Evaluating random baseline ({num_trials} trials)...")
         
-        comparison = {
-            'libro': libro_metrics,
-            'baseline': baseline_metrics,
-            'improvements': {}
-        }
+        all_trial_metrics = []
         
-        # Calculate improvements
-        for k in k_values:
-            acc_key = f'acc@{k}'
-            libro_acc = libro_metrics['acc_at_k'][acc_key]['precision']
-            baseline_acc = baseline_metrics['acc_at_k'][acc_key]['precision']
+        for trial in range(num_trials):
+            # Create random rankings
+            trial_results = {}
             
-            improvement = libro_acc - baseline_acc
-            improvement_pct = (improvement / baseline_acc * 100) if baseline_acc > 0 else 0
+            for bug_id, result in results.items():
+                trial_result = result.copy()
+                
+                # Randomly shuffle ranking if exists
+                if 'ranking' in result and result['ranking']:
+                    trial_result['ranking'] = RandomBaseline.random_ranking(
+                        result['ranking'],
+                        seed=42 + trial
+                    )
+                
+                trial_results[bug_id] = trial_result
             
-            comparison['improvements'][acc_key] = {
-                'absolute': improvement,
-                'percentage': improvement_pct
-            }
+            # Calculate metrics for this trial
+            trial_metrics = EvaluationMetrics.calculate_all_metrics(trial_results)
+            all_trial_metrics.append(trial_metrics)
         
-        return comparison
+        # Average across trials
+        averaged_metrics = {}
+        
+        # Get all metric keys from first trial
+        metric_keys = all_trial_metrics[0].keys()
+        
+        for key in metric_keys:
+            values = [m[key] for m in all_trial_metrics if m[key] != float('inf')]
+            
+            if values:
+                averaged_metrics[key] = np.mean(values)
+                averaged_metrics[f'{key}_std'] = np.std(values)
+            else:
+                averaged_metrics[key] = float('inf')
+                averaged_metrics[f'{key}_std'] = 0.0
+        
+        return averaged_metrics

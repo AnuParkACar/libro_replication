@@ -1,0 +1,16 @@
+[
+  {
+    "project": "Lang",
+    "bug_id": "1",
+    "title": "NumberUtils.isNumber(String) should return false for blank strings",
+    "description": "The method NumberUtils.isNumber(String) in Apache Commons Lang returns true for blank strings (e.g., \" \"). According to the documentation, it should return false for blank strings.",
+    "test": "public void testIsNumberBlank() {\n    assertFalse(NumberUtils.isNumber(\" \"));\n    assertFalse(NumberUtils.isNumber(\"\"));\n    assertFalse(NumberUtils.isNumber(\"   \"));\n}"
+  },
+  {
+    "project": "Math",
+    "bug_id": "63",
+    "title": "NaN in equals methods",
+    "description": "In MathUtils, some \"equals\" methods will return true if both arguments are NaN. Unless I'm mistaken, this contradicts the IEEE standard.",
+    "test": "public void testEqualsNaN() {\n    assertFalse(MathUtils.equals(Double.NaN, Double.NaN));\n    assertFalse(MathUtils.equals(Float.NaN, Float.NaN));\n}"
+  }
+]

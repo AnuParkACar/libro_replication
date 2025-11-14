@@ -1,0 +1,182 @@
+[
+  {
+    "project": "Lang",
+    "bug_id": "1",
+    "report_id": "LANG-747",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-747"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "3",
+    "report_id": "LANG-693",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-693"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "4",
+    "report_id": "LANG-882",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-882"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "5",
+    "report_id": "LANG-865",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-865"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "6",
+    "report_id": "LANG-857",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-857"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "7",
+    "report_id": "LANG-822",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-822"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "8",
+    "report_id": "LANG-818",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-818"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "9",
+    "report_id": "LANG-832",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-832"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "10",
+    "report_id": "LANG-831",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-831"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "11",
+    "report_id": "LANG-807",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-807"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "12",
+    "report_id": "LANG-805",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-805"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "13",
+    "report_id": "LANG-788",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-788"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "14",
+    "report_id": "LANG-786",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-786"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "15",
+    "report_id": "LANG-775",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-775"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "16",
+    "report_id": "LANG-746",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-746"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "17",
+    "report_id": "LANG-720",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-720"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "19",
+    "report_id": "LANG-710",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-710"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "20",
+    "report_id": "LANG-703",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-703"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "21",
+    "report_id": "LANG-677",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-677"
+  },
+  {
+    "project": "Lang",
+    "bug_id": "22",
+    "report_id": "LANG-662",
+    "report_url": "https://issues.apache.org/jira/browse/LANG-662"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "1",
+    "report_id": "23",
+    "report_url": "https://github.com/jhy/jsoup/issues/23"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "2",
+    "report_id": "22",
+    "report_url": "https://github.com/jhy/jsoup/issues/22"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "3",
+    "report_id": "21",
+    "report_url": "https://github.com/jhy/jsoup/issues/21"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "4",
+    "report_id": "31",
+    "report_url": "https://github.com/jhy/jsoup/issues/31"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "5",
+    "report_id": "32",
+    "report_url": "https://github.com/jhy/jsoup/issues/32"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "6",
+    "report_id": "34",
+    "report_url": "https://github.com/jhy/jsoup/issues/34"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "7",
+    "report_id": "43",
+    "report_url": "https://github.com/jhy/jsoup/issues/43"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "8",
+    "report_id": "45",
+    "report_url": "https://github.com/jhy/jsoup/issues/45"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "9",
+    "report_id": "46",
+    "report_url": "https://github.com/jhy/jsoup/issues/46"
+  },
+  {
+    "project": "Jsoup",
+    "bug_id": "10",
+    "report_id": "49",
+    "report_url": "https://github.com/jhy/jsoup/issues/49"
+  }
+]
