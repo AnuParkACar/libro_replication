@@ -1,0 +1,229 @@
+#!/usr/bin/env python3
+"""Generate model testing notebook."""
+
+import json
+
+notebook = {
+    "cells": [
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "# Model Setup and Testing\n",
+                "Test loading and inference with open-source models"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Install dependencies\n",
+                "!pip install transformers torch accelerate huggingface_hub sentencepiece -q"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Check GPU availability\n",
+                "import torch\n",
+                "print(f\"CUDA available: {torch.cuda.is_available()}\")\n",
+                "print(f\"GPU: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'None'}\")\n",
+                "print(f\"GPU Memory: {torch.cuda.get_device_properties(0).total_memory / 1e9 if torch.cuda.is_available() else 0:.2f} GB\")"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Login to HuggingFace\n",
+                "from huggingface_hub import notebook_login\n",
+                "notebook_login()"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Test model loading - StarCoder2-15B\n",
+                "from transformers import AutoModelForCausalLM, AutoTokenizer\n",
+                "\n",
+                "model_name = \"bigcode/starcoder2-15b\"\n",
+                "print(f\"Loading {model_name}...\")\n",
+                "\n",
+                "tokenizer = AutoTokenizer.from_pretrained(model_name)\n",
+                "model = AutoModelForCausalLM.from_pretrained(\n",
+                "    model_name,\n",
+                "    torch_dtype=torch.float16,\n",
+                "    device_map=\"auto\",\n",
+                "    trust_remote_code=True\n",
+                ")\n",
+                "\n",
+                "print(f\"✓ Model loaded successfully\")\n",
+                "print(f\"Model size: {sum(p.numel() for p in model.parameters()) / 1e9:.2f}B parameters\")"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Test inference\n",
+                "test_prompt = '''# Bug: NaN in \"equals\" methods\n",
+                "## Description\n",
+                "In \"MathUtils\", some \"equals\" methods will return true if both arguments are NaN.\n",
+                "\n",
+                "## Reproduction\n",
+                ">Provide a self-contained example that reproduces this issue.\n",
+                "```java\n",
+                "public void test'''\n",
+                "\n",
+                "inputs = tokenizer(test_prompt, return_tensors=\"pt\").to(model.device)\n",
+                "\n",
+                "print(\"Generating test...\")\n",
+                "outputs = model.generate(\n",
+                "    **inputs,\n",
+                "    max_new_tokens=256,\n",
+                "    temperature=0.7,\n",
+                "    do_sample=True,\n",
+                "    pad_token_id=tokenizer.eos_token_id,\n",
+                "    stop_strings=[\"```\"],\n",
+                "    tokenizer=tokenizer\n",
+                ")\n",
+                "\n",
+                "generated_text = tokenizer.decode(outputs[0], skip_special_tokens=True)\n",
+                "print(\"\\n\" + \"=\"*80)\n",
+                "print(\"Generated:\")\n",
+                "print(\"=\"*80)\n",
+                "print(generated_text[len(test_prompt):])"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Save model to cache for faster reloading\n",
+                "cache_dir = \"/content/drive/MyDrive/libro_replication/model_cache\"\n",
+                "model.save_pretrained(cache_dir)\n",
+                "tokenizer.save_pretrained(cache_dir)\n",
+                "print(f\"✓ Model cached to {cache_dir}\")"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Testing Alternative Models\n",
+                "Test with smaller models for ablation studies"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Test with DeepSeek-Coder-7B (smaller, faster)\n",
+                "model_name_7b = \"deepseek-ai/deepseek-coder-7b-base-v1.5\"\n",
+                "print(f\"Loading {model_name_7b}...\")\n",
+                "\n",
+                "tokenizer_7b = AutoTokenizer.from_pretrained(model_name_7b)\n",
+                "model_7b = AutoModelForCausalLM.from_pretrained(\n",
+                "    model_name_7b,\n",
+                "    torch_dtype=torch.float16,\n",
+                "    device_map=\"auto\",\n",
+                "    trust_remote_code=True\n",
+                ")\n",
+                "\n",
+                "print(f\"✓ 7B model loaded successfully\")"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Test inference with 7B model\n",
+                "inputs_7b = tokenizer_7b(test_prompt, return_tensors=\"pt\").to(model_7b.device)\n",
+                "\n",
+                "print(\"Generating with 7B model...\")\n",
+                "outputs_7b = model_7b.generate(\n",
+                "    **inputs_7b,\n",
+                "    max_new_tokens=256,\n",
+                "    temperature=0.7,\n",
+                "    do_sample=True,\n",
+                "    pad_token_id=tokenizer_7b.eos_token_id,\n",
+                "    stop_strings=[\"```\"],\n",
+                "    tokenizer=tokenizer_7b\n",
+                ")\n",
+                "\n",
+                "generated_text_7b = tokenizer_7b.decode(outputs_7b[0], skip_special_tokens=True)\n",
+                "print(\"\\n\" + \"=\"*80)\n",
+                "print(\"7B Model Generated:\")\n",
+                "print(\"=\"*80)\n",
+                "print(generated_text_7b[len(test_prompt):])"
+            ]
+        },
+        {
+            "cell_type": "markdown",
+            "metadata": {},
+            "source": [
+                "## Mount Google Drive for Persistence\n",
+                "Mount Drive to save results across Colab sessions"
+            ]
+        },
+        {
+            "cell_type": "code",
+            "execution_count": None,
+            "metadata": {},
+            "outputs": [],
+            "source": [
+                "# Mount Google Drive\n",
+                "from google.colab import drive\n",
+                "drive.mount('/content/drive')\n",
+                "\n",
+                "# Create project directory\n",
+                "import os\n",
+                "project_dir = '/content/drive/MyDrive/libro_replication'\n",
+                "os.makedirs(project_dir, exist_ok=True)\n",
+                "os.makedirs(f\"{project_dir}/results\", exist_ok=True)\n",
+                "os.makedirs(f\"{project_dir}/model_cache\", exist_ok=True)\n",
+                "print(f\"✓ Project directory ready: {project_dir}\")"
+            ]
+        }
+    ],
+    "metadata": {
+        "accelerator": "GPU",
+        "colab": {
+            "gpuType": "A100",
+            "provenance": []
+        },
+        "kernelspec": {
+            "display_name": "Python 3",
+            "name": "python3"
+        },
+        "language_info": {
+            "name": "python"
+        }
+    },
+    "nbformat": 4,
+    "nbformat_minor": 0
+}
+
+# Write notebook
+with open('notebooks/01_model_setup.ipynb', 'w') as f:
+    json.dump(notebook, f, indent=2)
+
+print("✓ Notebook created: notebooks/01_model_setup.ipynb")

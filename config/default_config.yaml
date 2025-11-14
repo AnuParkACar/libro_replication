@@ -1,0 +1,60 @@
+# LIBRO Replication Configuration
+
+# Defects4J settings
+defects4j:
+  path: "/home/user/libro_replication/defects4j"
+  version: "3.0.0"
+  selected_bugs: "data/bugs/selected_bugs.json"
+
+# Model settings
+model:
+  primary: "starcoder2-15b"
+  cache_dir: "models/"
+  temperature: 0.7
+  max_tokens: 256
+  stop_sequences: ["```"]
+
+# Prompt settings
+prompt:
+  num_examples: 2
+  example_source: "fixed"  # fixed, same_project, or random
+  include_stack_trace: false
+  include_constructor: false
+
+# Generation settings
+generation:
+  samples_per_bug: 10  # n in paper
+  batch_size: 1
+  timeout_seconds: 300
+
+# Test processing settings
+processing:
+  host_class_method: "lexical_similarity"  # Algorithm 1
+  import_resolution: "heuristic"
+  compilation_timeout: 120
+  execution_timeout: 60
+
+# Selection and ranking settings
+ranking:
+  agreement_threshold: 1  # T_hr in paper
+  clustering_method: "error_output"  # exact match on error type + message
+  ranking_heuristics:
+    - "bug_report_match"    # Match with report
+    - "cluster_size"        # Agreement/consensus
+    - "test_brevity"        # Token count
+
+# Evaluation settings
+evaluation:
+  metrics:
+    - "brt_rate"           # Bugs with ≥1 BRT
+    - "acc@1"
+    - "acc@3"
+    - "acc@5"
+    - "wef@5"              # Wasted effort at 5
+  random_baseline_trials: 100
+
+# Logging
+logging:
+  level: "INFO"
+  file: "logs/libro_replication.log"
+  console: true

@@ -1,0 +1,29 @@
+# Large data files
+data/GHRB/repos/
+data/GHRB/*.tar.gz
+data/bugs/bug_reports_*.json
+
+# Model cache
+models/
+cache/
+
+# Results (optional - you might want to commit some)
+results/*/final_results.json
+results/*/*.tar.gz
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.pytest_cache/
+
+# Logs
+logs/*.log
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
