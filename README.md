@@ -58,17 +58,3 @@ bug_info = {
 results = pipeline.run_on_bug(bug_info)
 print(f"BRTs found: {len(results['brt_tests'])}")
 ```
-
-## Day 1 Status
-
-✅ Defects4J v3.0 installed
-✅ Bug selection script created
-✅ Model manager implemented
-✅ Pipeline skeleton completed
-✅ Configuration system set up
-✅ Logging infrastructure ready
-
-## Next Steps (Day 2)
-- Implement prompt engineering
-- Test multi-sample generation
-- Create few-shot example bank
